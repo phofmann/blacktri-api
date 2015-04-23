@@ -2,6 +2,8 @@ package de.blacktri.restapi;
 
 import de.blacktri.restapi.httpclient.ABTestingRestConnector;
 import de.blacktri.restapi.pojos.Account;
+import de.blacktri.restapi.pojos.DataSet;
+import de.blacktri.restapi.pojos.Decision;
 import de.blacktri.restapi.pojos.Project;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -11,13 +13,17 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({
         "classpath:/framework/spring/ab-testing-services.xml"
 })
 public class ABTestTest {
+  private static final String API_KEY = "cr_productdemo";
+  private static final String API_SECRET = "4zdget465er3z4";
 
   @Inject
   ABTestingRestConnector restConnector;
@@ -43,21 +49,8 @@ public class ABTestTest {
 
   @Test
   @Ignore
-  public void testGetProjects() {
-    Project testProject1 = new Project("VISUAL", "http://test.de", "pattern", "Testname1");
-    int projectId = getTestling().createProject(clientId, testProject1);
-    getTestling().startProject(clientId, projectId);
-    List<Project> projects = getTestling().getProjects(clientId);
-    for (Project project : projects) {
-      getTestling().deleteProject(clientId, project.getId());
-    }
-  }
-
-  @Test
-  @Ignore
   public void testCreateProject() {
-    Project testProject = new Project("VISUAL", "http://test.de", "pattern", "Testname");
-    int projectId = getTestling().createProject(clientId, testProject);
+    int projectId = getTestling().createProject(clientId, getProject());
     Project project = getTestling().getProject(clientId, projectId);
     project.setName("Blub");
     getTestling().updateProject(clientId, projectId, project);
@@ -69,8 +62,7 @@ public class ABTestTest {
   @Test
   @Ignore
   public void testStartStopRestartProject() {
-    Project testProject = new Project("VISUAL", "http://test.de", "pattern", "Testname");
-    int projectId = getTestling().createProject(clientId, testProject);
+    int projectId = getTestling().createProject(clientId, getProject());
     getTestling().startProject(clientId, projectId);
     getTestling().stopProject(clientId, projectId);
     getTestling().startAutopilot(clientId, projectId);
@@ -80,11 +72,62 @@ public class ABTestTest {
 
   }
 
+  @Test
+  @Ignore
+  public void testDeleteAllProjects() {
+    List<Project> projects = getTestling().getProjects(clientId);
+    for (Project project : projects) {
+      getTestling().deleteProject(clientId, project.getId());
+    }
+  }
+
+  @Test
+  @Ignore
+  public void testGetTrend() {
+    ABTest test = getTestling();
+    List<Project> projects = test.getProjects(clientId);
+    for (Project project : projects) {
+      Map<Calendar, Map<String, DataSet>> trend = test.getTrend(clientId, project.getId(), null, 1, -1);
+      for (Map.Entry<Calendar, Map<String, DataSet>> calendarMapEntry : trend.entrySet()) {
+        System.out.println("For " + ABTestingRestConnector.DATE_FORMAT.format(calendarMapEntry.getKey().getTime()));
+        for (Map.Entry<String, DataSet> o : calendarMapEntry.getValue().entrySet()) {
+          System.out.println(o.getKey() + ": Name: " + o.getValue().getName() + " Conversion: " + o.getValue().getConversions() + " Impressions: " + o.getValue().getImpressions() + " Aggregatedcr: " + o.getValue().getAggregatedcr());
+
+        }
+      }
+    }
+  }
+
+
+  @Test
+  @Ignore
+  public void playground() {
+    ABTest test = getTestling();
+    int projectId = test.createProject(clientId, getProject());
+    Decision decision1 = new Decision("Green");
+    decision1.setCssinjection(".cm-teaser--hero .cm-heading2--boxed {\n" +
+            "    background-color: #00ff00;\n" +
+            "}");
+    test.createDecision(clientId, projectId, decision1);
+
+    Decision decision2 = new Decision("Red");
+    decision2.setCssinjection(".cm-teaser--hero .cm-heading2--boxed {\n" +
+            "    background-color: #ff0000;\n" +
+            "}");
+    test.createDecision(clientId, projectId, decision2);
+
+
+    test.startProject(clientId, projectId);
+
+  }
+
+  private Project getProject() {
+    return new Project("VISUAL", "http://preview-helios.livecontext.coremedia.com", "*", "PerfectChef " + System.currentTimeMillis());
+  }
+
   private ABTest getTestling() {
     if (testling == null) {
-      ABTest abTest = new ABTest();
-      abTest.setRestConnector(restConnector);
-      this.testling = abTest;
+      this.testling = new ABTest(API_KEY, API_SECRET, restConnector);
       this.clientId = testling.loginClient();
     }
     return testling;

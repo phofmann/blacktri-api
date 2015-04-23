@@ -4,7 +4,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Project {
+public class Project extends BlackTriObject {
   /**
    * Internal project ID
    */
@@ -137,27 +137,18 @@ public class Project {
     this.name = name;
   }
 
-  public Map<String, Object> getProjectForRemoteCreation() {
+  public Map<String, Object> toMap() {
     Map<String, Object> result = new HashMap<>();
-    result.put("type", this.getType());
-    result.put("mainurl", this.getMainurl());
-    result.put("runpattern", this.getRunpattern());
-    result.put("name", this.getName());
-    return result;
-  }
-
-  public Map<String, Object> getProjectForRemoteUpdate() {
-    Map<String, Object> result = new HashMap<>();
-    result.put("type", this.getType());
-    result.put("mainurl", this.getMainurl());
-    result.put("runpattern", this.getRunpattern());
-    result.put("startdate", this.getStartdate());
-    result.put("enddate", this.getEnddate());
-    result.put("name", this.getName());
-    result.put("allocation", this.getAllocation());
-    result.put("ipblacklisting", this.isIpblacklisting());
-    result.put("personalizationmode", this.getPersonalizationmode());
-    result.put("ruleid", this.getRuleid());
+    addRequiredParameter(result, "type", this.getType());
+    addRequiredParameter(result, "mainurl", this.getMainurl());
+    addRequiredParameter(result, "runpattern", this.getRunpattern());
+    addRequiredParameter(result, "name", this.getName());
+    addOptionalParameter(result, "startdate", this.getStartdate());
+    addOptionalParameter(result, "enddate", this.getEnddate());
+    addOptionalParameter(result, "allocation", this.getAllocation());
+    addOptionalParameter(result, "ipblacklisting", this.isIpblacklisting());
+    addOptionalParameter(result, "personalizationmode", this.getPersonalizationmode());
+    addOptionalParameter(result, "ruleid", this.getRuleid());
     return result;
   }
 

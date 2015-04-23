@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Map;
 
 import static org.apache.http.client.utils.HttpClientUtils.closeQuietly;
@@ -39,7 +40,7 @@ public class ABTestingRestConnector {
   private int connectionTimeout = -1;
   private int socketTimeout = -1;
   private int connectionPoolSize = 200;
-  private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+  public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
   /**
    * The user's api key
@@ -65,6 +66,23 @@ public class ABTestingRestConnector {
 
 
   private static final Logger LOG = LoggerFactory.getLogger(ABTestingRestConnector.class);
+
+  public <T> T callService(HttpMethod serviceMethod, String uriTemplate, TypeReference returnType,
+                           Object bodyData) {
+    return callService(serviceMethod, uriTemplate, returnType,
+            Collections.<String, Object>emptyMap(),
+            Collections.<String, String>emptyMap(),
+            bodyData);
+  }
+
+  public <T> T callService(HttpMethod serviceMethod, String uriTemplate, TypeReference returnType,
+                           Map<String, Object> queryParameters,
+                           Object bodyData) {
+    return callService(serviceMethod, uriTemplate, returnType,
+            queryParameters,
+            Collections.<String, String>emptyMap(),
+            bodyData);
+  }
 
   public <T> T callService(HttpMethod serviceMethod, String uriTemplate, TypeReference returnType,
                            Map<String, Object> queryParameters,
@@ -236,12 +254,10 @@ public class ABTestingRestConnector {
     this.connectionPoolSize = connectionPoolSize;
   }
 
-  @Required
   public void setApiKey(String apiKey) {
     this.apiKey = apiKey;
   }
 
-  @Required
   public void setApiSecret(String apiSecret) {
     this.apiSecret = apiSecret;
   }

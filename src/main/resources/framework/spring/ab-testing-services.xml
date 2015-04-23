@@ -14,8 +14,6 @@
     <property name="connectionPoolSize" value="200"/>
     <property name="connectionTimeout" value="10000"/>
     <property name="socketTimeout" value="30000"/>
-    <property name="apiKey" value="cr_productdemo"/>
-    <property name="apiSecret" value="4zdget465er3z4"/>
   </bean>
 
 </beans>

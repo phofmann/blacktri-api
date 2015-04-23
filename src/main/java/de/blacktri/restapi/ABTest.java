@@ -2,12 +2,19 @@ package de.blacktri.restapi;
 
 import de.blacktri.restapi.httpclient.ABTestingRestConnector;
 import de.blacktri.restapi.pojos.Account;
+import de.blacktri.restapi.pojos.Condition;
+import de.blacktri.restapi.pojos.DataSet;
+import de.blacktri.restapi.pojos.Decision;
+import de.blacktri.restapi.pojos.Goal;
 import de.blacktri.restapi.pojos.Project;
+import de.blacktri.restapi.pojos.Rule;
 import org.codehaus.jackson.type.TypeReference;
-import org.springframework.beans.factory.annotation.Required;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.StringUtils;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -23,15 +30,35 @@ import java.util.Map;
  */
 public class ABTest {
 
+
+  private static final Logger LOG = LoggerFactory.getLogger(ABTest.class);
+
+  public static final String ACCOUNT = "account/";
+  public static final String PROJECT = "/project/";
+  public static final String START = "/start";
+  public static final String STOP = "/stop";
+  public static final String RESTART = "/restart";
+  public static final String AUTOPILOT = "/autopilot";
+  public static final String DECISION = "/decision/";
+  public static final String DECISIONS = "/decisions";
+  public static final String GOAL = "/goal/";
+  public static final String RULE = "/rule/";
+  public static final String CONDITION = "/condition/";
   private ABTestingRestConnector restConnector;
+  private String apiKey;
+  private String apiSecret;
 
-
-  @Required
-  public void setRestConnector(ABTestingRestConnector connector) {
-    this.restConnector = connector;
+  public ABTest(String apiKey, String apiSecret, ABTestingRestConnector restConnector) {
+    this.apiKey = apiKey;
+    this.apiSecret = apiSecret;
+    this.restConnector = restConnector;
+    this.restConnector.setApiKey(apiKey);
+    this.restConnector.setApiSecret(apiSecret);
   }
 
   public ABTestingRestConnector getRestConnector() {
+    restConnector.setApiKey(apiKey);
+    restConnector.setApiSecret(apiSecret);
     return restConnector;
   }
 
@@ -50,7 +77,7 @@ public class ABTest {
     body.put("usertype", data);
 
     return getRestConnector().callService(HttpMethod.POST, "login", new TypeReference<Integer>() {
-    }, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(), body);
+    }, body);
   }
 
 
@@ -72,8 +99,8 @@ public class ABTest {
    * @return Object Containing all the details for the specified account
    */
   public Account getAccount(int clientId) {
-    return getRestConnector().callService(HttpMethod.GET, "account/" + clientId, new TypeReference<Account>() {
-    }, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(), null);
+    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId, new TypeReference<Account>() {
+    }, null);
   }
 
   /**
@@ -122,8 +149,8 @@ public class ABTest {
       queryParameters.put("fields", stringBuilder.toString());
     }
 
-    return getRestConnector().callService(HttpMethod.GET, "account/" + clientId + "/projects", new TypeReference<List<Project>>() {
-    }, queryParameters, Collections.<String, String>emptyMap(), null);
+    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + "/projects", new TypeReference<List<Project>>() {
+    }, queryParameters, null);
   }
 
   /**
@@ -137,8 +164,11 @@ public class ABTest {
    * @return Object Containing the new created project id
    */
   public Integer createProject(int clientId, Project project) {
-    return getRestConnector().callService(HttpMethod.POST, "account/" + clientId + "/project", new TypeReference<Integer>() {
-    }, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(), project.getProjectForRemoteCreation());
+    LOG.info("Creating project with name " + project.getName());
+    Integer projectId = getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + "/project", new TypeReference<Integer>() {
+    }, project.toMap());
+    LOG.info("Created project '" + project.getName() + "' with id " + projectId);
+    return projectId;
   }
 
   /**
@@ -153,8 +183,8 @@ public class ABTest {
    * @return Object Containing the details for the specified project
    */
   public Project getProject(int clientId, int projectId) {
-    return getRestConnector().callService(HttpMethod.GET, "account/" + clientId + "/project/" + projectId, new TypeReference<Project>() {
-    }, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(), null);
+    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + PROJECT + projectId, new TypeReference<Project>() {
+    }, null);
   }
 
   /**
@@ -164,7 +194,9 @@ public class ABTest {
    * @param projectId ID of the project to be deleted
    */
   public void deleteProject(int clientId, int projectId) {
-    getRestConnector().callService(HttpMethod.DELETE, "account/" + clientId + "/project/" + projectId, null, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(), null);
+    LOG.info("Deleting project with id " + projectId);
+    getRestConnector().callService(HttpMethod.DELETE, ACCOUNT + clientId + PROJECT + projectId, null, null);
+    LOG.info("Project with id " + projectId + " has been deleted");
   }
 
   /**
@@ -178,7 +210,7 @@ public class ABTest {
    * @param project   contains all edited fields to be updated
    */
   public void updateProject(int clientId, int projectId, Project project) {
-    getRestConnector().callService(HttpMethod.PUT, "account/" + clientId + "/project/" + projectId, null, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(), project.getProjectForRemoteUpdate());
+    getRestConnector().callService(HttpMethod.PUT, ACCOUNT + clientId + PROJECT + projectId, null, project.toMap());
   }
 
   /**
@@ -190,8 +222,8 @@ public class ABTest {
    * @return Object Containing  the response from the server after trying to start the project
    */
   public Boolean startProject(int clientId, int projectId) {
-    return getRestConnector().callService(HttpMethod.POST, "account/" + clientId + "/project/" + projectId + "/start", new TypeReference<Boolean>() {
-    }, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(), null);
+    return getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + PROJECT + projectId + START, new TypeReference<Boolean>() {
+    }, null);
   }
 
   /**
@@ -203,8 +235,8 @@ public class ABTest {
    * @return Object Containing the response from the server after trying to stop the project
    */
   public Boolean stopProject(int clientId, int projectId) {
-    return getRestConnector().callService(HttpMethod.POST, "account/" + clientId + "/project/" + projectId + "/stop", new TypeReference<Boolean>() {
-    }, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(), null);
+    return getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + PROJECT + projectId + STOP, new TypeReference<Boolean>() {
+    }, null);
   }
 
   /**
@@ -216,8 +248,8 @@ public class ABTest {
    * @return Object Containing  the response from the server after trying to restart the project
    */
   public Boolean restartProject(int clientId, int projectId) {
-    return getRestConnector().callService(HttpMethod.POST, "account/" + clientId + "/project/" + projectId + "/restart", new TypeReference<Boolean>() {
-    }, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(), null);
+    return getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + PROJECT + projectId + RESTART, new TypeReference<Boolean>() {
+    }, null);
   }
 
   /**
@@ -228,8 +260,8 @@ public class ABTest {
    * @return Object Containing the response from the server after trying to start the autopilot for the project
    */
   public Object startAutopilot(int clientId, int projectId) {
-    return getRestConnector().callService(HttpMethod.POST, "account/" + clientId + "/project/" + projectId + "/autopilot/start", new TypeReference<Boolean>() {
-    }, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(), null);
+    return getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + PROJECT + projectId + AUTOPILOT + START, new TypeReference<Boolean>() {
+    }, null);
   }
 
   /**
@@ -240,7 +272,314 @@ public class ABTest {
    * @return Object Containing the response from the server after trying to stop the atopilot for the project
    */
   public Object stopAutopilot(int clientId, int projectId) {
-    return getRestConnector().callService(HttpMethod.POST, "account/" + clientId + "/project/" + projectId + "/autopilot/stop", new TypeReference<Boolean>() {
-    }, Collections.<String, Object>emptyMap(), Collections.<String, String>emptyMap(), null);
+    return getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + PROJECT + projectId + AUTOPILOT + STOP, new TypeReference<Boolean>() {
+    }, null);
+  }
+
+
+  /**
+   * Returns a list of decisions for the given project
+   * <p/>
+   * The result list can be sorted by providing the qualifier "sort" with one of the following attributes:
+   * "name", "conversions", A dash can be added to the attribute to indicate descending order
+   * (e.g. sort=-name).
+   * The list can be searched/filtered with the following querystring qualifiers that refer to values of the
+   * resource attributes: "result". (e.g. sort=-name&result=WON)
+   *
+   * @param clientId  - the user account id to retrieve the data for
+   * @param projectId The id of the project to retrieve all decisions from
+   * @param sort      - URL parameters to sort results ( sort=-id )
+   * @param filter    - URL parameters to filter results ( name=MyVariatn )
+   * @return Object Containing the list of decisions with their respective details for the given project
+   */
+  public List<Decision> getDecisions(int clientId, int projectId, String sort, String filter) {
+    Map<String, Object> queryParameters = new HashMap<>();
+    if (StringUtils.hasText(sort)) {
+      queryParameters.put("sort", sort);
+    }
+    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + PROJECT + projectId + DECISIONS, new TypeReference<List<Decision>>() {
+    }, queryParameters, null);
+  }
+
+  /**
+   * Returns all data given a decision id
+   * <p/>
+   * The decision object contains the same data returned for the list of decisions in the previous method
+   * only that this is for a single decision.
+   *
+   * @param clientId   - the user account id to retrieve the data for
+   * @param projectId  the id of the project to retrieve the decision info from
+   * @param decisionId the id of the decision
+   * @return Object Containing all details for the specified decision for the given project
+   */
+  public Decision getDecision(int clientId, int projectId, int decisionId) {
+    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + PROJECT + projectId + DECISION + decisionId, new TypeReference<Decision>() {
+    }, null);
+  }
+
+  /**
+   * Creates a new decision which will be associated with the given project
+   *
+   * @param clientId  - the user account id to retrieve the data for
+   * @param projectId - the project ID which decisions belongs to
+   * @param decision  - contains each decision field to be created in the DB
+   * @return Object Containing the new created decision id
+   */
+  public int createDecision(int clientId, int projectId, Decision decision) {
+    return getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + PROJECT + projectId + "/decision", new TypeReference<Integer>() {
+    }, decision.toMap());
+  }
+
+  /**
+   * Updates a decision with the data passed as parameter
+   *
+   * @param clientId   - the user account id to retrieve the data for
+   * @param projectId  The ID of the project to update the decision for
+   * @param decisionId The ID of the decision to be updated
+   * @param decision   - contains all required fields to be updated in the DB
+   */
+  public void updateDecision(int clientId, int projectId, int decisionId, Decision decision) {
+    getRestConnector().callService(HttpMethod.PUT, ACCOUNT + clientId + PROJECT + projectId + DECISION + decisionId, null, decision.toMap());
+  }
+
+  /**
+   * Deletes a decision given a project and a decision ID
+   *
+   * @param clientId   - the user account id to retrieve the data for
+   * @param projectId  The ID of the project to delete the decision for
+   * @param decisionId The ID of the decision to be deleted
+   */
+  public void deleteDecision(int clientId, int projectId, int decisionId) {
+    getRestConnector().callService(HttpMethod.DELETE, ACCOUNT + clientId + PROJECT + projectId + DECISION + decisionId, null, null);
+  }
+
+  /**
+   * Returns an object with a list of goals assigned to a particular project
+   *
+   * @param clientId  - the user account id to retrieve the data for
+   * @param projectId The ID of the project to retrieve the goals for
+   * @return Object Containing the list of goals with their respective details for the given project
+   */
+  public List<Goal> getGoals(int clientId, int projectId) {
+    Map<String, Object> queryParameters = new HashMap<>();
+    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + PROJECT + projectId + "/goals", new TypeReference<List<Goal>>() {
+    }, queryParameters, null);
+  }
+
+  /**
+   * gets a particular goal information
+   *
+   * @param clientId  - the user account id to retrieve the data for
+   * @param projectId The ID of the project to retrieve the goal data for
+   * @param goalId    The ID od the goal itself
+   * @return Object Containing all details for the specified goal for the given project
+   */
+  public Goal getGoal(int clientId, int projectId, int goalId) {
+    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + PROJECT + projectId + GOAL + goalId, new TypeReference<Goal>() {
+    }, null);
+  }
+
+  /**
+   * Creates a relation betwen a goal and a project
+   *
+   * @param clientId  - the user account id to retrieve the data for
+   * @param projectId The ID of the project to assign the goal for
+   * @param goal      The ID of the goal itself
+   * @return Object Containing  the new created goal id
+   */
+  public int createGoal(int clientId, int projectId, Goal goal) {
+    return getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + PROJECT + projectId + "/goal", new TypeReference<Integer>() {
+    }, goal.getGoalForRemoteCreation());
+  }
+
+  /**
+   * Updates  a goal entry with the new data passed as parameter
+   *
+   * @param clientId  - the user account id to retrieve the data for
+   * @param projectId The ID of the project to update the goal for
+   * @param goalId    The ID of the goal to be related to the given project
+   * @param goal      Contains all required data for the goal
+   */
+  public void updateGoal(int clientId, int projectId, int goalId, Goal goal) {
+    getRestConnector().callService(HttpMethod.PUT, ACCOUNT + clientId + PROJECT + projectId + GOAL + goalId, null, goal.getGoalForRemoteUpdate());
+  }
+
+  /**
+   * Un-relates a goal from a project given their ID's
+   *
+   * @param clientId  - the user account id to retrieve the data for
+   * @param projectId The ID of the project to delete the goal for
+   * @param goalId    The ID of the goal to be deleted
+   */
+  public void deleteGoal(int clientId, int projectId, int goalId) {
+    getRestConnector().callService(HttpMethod.DELETE, ACCOUNT + clientId + PROJECT + projectId + GOAL + goalId, null, null);
+  }
+
+  /**
+   * Gets an object containing a list of rules for the logged client
+   * <p/>
+   * If the client is a tenant, he can get the rules that has been created by himself or by all of his
+   * clients.
+   *
+   * @param clientId - the user account id to retrieve the data for
+   * @return Object Containing a list of rules with their respective details
+   */
+  public List<Rule> getRules(int clientId) {
+    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + "/rules", new TypeReference<List<Rule>>() {
+    }, null);
+  }
+
+  /**
+   * Gets all data for a particular rule
+   *
+   * @param clientId - the user account id to retrieve the data for
+   * @param ruleId   The ID of the rule to retrieve the data for
+   * @return Object Containing all details for a specific rule
+   */
+  public Rule getRule(int clientId, int ruleId) {
+    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + RULE + ruleId, new TypeReference<Rule>() {
+    }, null);
+  }
+
+  /**
+   * Creates a new rule with the respective data sent as parameter
+   *
+   * @param clientId - the user account id to retrieve the data for
+   * @param rule     Contains the rule required data (name, operation)
+   * @return Object Containing  the new created rule id
+   */
+  public int createRule(int clientId, Rule rule) {
+    return getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + "/rule", new TypeReference<Integer>() {
+    }, rule.getRuleForRemoteCreation());
+  }
+
+  /**
+   * Given a rule ID updates it data.
+   * <p/>
+   * The $rule array contains the name of the rule and the operation (AND/OR)
+   *
+   * @param clientId - the user account id to retrieve the data for
+   * @param ruleId   The ID of the rule to be updated
+   * @param rule     Contains the rule required data
+   */
+  public void updateRule(int clientId, int ruleId, Rule rule) {
+    getRestConnector().callService(HttpMethod.PUT, ACCOUNT + clientId + RULE + ruleId, null, rule.getRuleForRemoteUpdate());
+  }
+
+  /**
+   * Given a rule ID, sends a request to be deleted from the DB
+   *
+   * @param clientId - the user account id to retrieve the data for
+   * @param ruleId   The ID of the rule to be deleted
+   */
+  public void deleteRule(int clientId, int ruleId) {
+    getRestConnector().callService(HttpMethod.DELETE, ACCOUNT + clientId + RULE + ruleId, null, null);
+  }
+
+  /**
+   * Returns an object with a list of conditions and the respective data.
+   * <p/>
+   * Each element of the response object contains the value of the "negation" field (boolean),
+   * the type (String) and the arguments (String).
+   *
+   * @param clientId - the user account id to retrieve the data for
+   * @param ruleId
+   * @return Object Containing a list of conditions with their respective details for a given rule
+   */
+  public List<Condition> getConditions(int clientId, int ruleId) {
+    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + RULE + ruleId + "/conditions", new TypeReference<List<Condition>>() {
+    }, null);
+  }
+
+  /**
+   * Returns all data for the given condition.
+   * <p/>
+   * Returned object contains the value of the "negation" field (boolean), the type (String) and the
+   * arguments (String).
+   *
+   * @param clientId    - the user account id to retrieve the data for
+   * @param ruleId      The ID of the rule that the condition belongs to
+   * @param conditionId The ID of the condition itself
+   * @return Object Containing all details given a condition for the specified rule
+   */
+  public Condition getCondition(int clientId, int ruleId, int conditionId) {
+    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + RULE + ruleId + CONDITION + conditionId, new TypeReference<Condition>() {
+    }, null);
+  }
+
+  /**
+   * creates a new condition for the given rule
+   * <p/>
+   * The condition array (second parameter) has to contain the valu of the negation attribute (Boolean),
+   * the type of the condition(String) and optionally the arguments(String)
+   *
+   * @param clientId  - the user account id to retrieve the data for
+   * @param ruleId    The ID of the rule to create the condition for
+   * @param condition An array containing all required fields to create a new condition
+   * @return Object Containing  the new created condition id
+   */
+  public int createCondition(int clientId, int ruleId, Condition condition) {
+    return getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + RULE + ruleId + "/condition", new TypeReference<Integer>() {
+    }, condition.getConditionForRemoteCreation());
+  }
+
+  /**
+   * Updates all or some of the data for a particular decision
+   *
+   * @param clientId    - the user account id to retrieve the data for
+   * @param ruleId      The ID of the rule that the condition belogs to
+   * @param conditionId The ID of the condition to be updated
+   * @param condition   Contains the required data to update the condition in the DB
+   */
+  public void updateCondition(int clientId, int ruleId, int conditionId, Condition condition) {
+    getRestConnector().callService(HttpMethod.PUT, ACCOUNT + clientId + RULE + ruleId + CONDITION + conditionId, null, condition.getConditionForRemoteUpdate());
+  }
+
+  /**
+   * Given a rule ID and a condition ID, deletes the particular condition which is part of the given rule
+   *
+   * @param clientId    - the user account id to retrieve the data for
+   * @param ruleId      The ID of the rule that the condition belongs to
+   * @param conditionId The ID of the condition to be deleted
+   */
+  public void deleteCondition(int clientId, int ruleId, int conditionId) {
+    getRestConnector().callService(HttpMethod.DELETE, ACCOUNT + clientId + RULE + ruleId + CONDITION + conditionId, null, null);
+  }
+
+  /**
+   * Returns an object containing statistical data for the given project
+   * <p/>
+   * In the server, the project and its decisions are evaluated to determine the amount of impressions,
+   * conversions and aggregated conversion rate to create an object with statistical data for a period
+   * of time.
+   * Users can filter results to retrieve a custom number of entries, to define an end date or a particular
+   * goal ID, e.g: getTrend(456, entries=50,enddate=2015-01-31,goalid=74);
+   * This will return statistics for the project with ID = 456 which goal id =  74
+   * and a total of 50 entries from 2014-12-21 to 2015-01-31 .
+   *
+   * @param clientId  - the user account id to retrieve the data for
+   * @param projectId The Id of the project to return the statistics for
+   * @param end       Specifies the latest required timestamp in the result.
+   * @param entries   Number of datapoints / timestamps in the result (currently translated to the number of days in the result).
+   *                  <p/>
+   *                  The default is 30.
+   * @param goalId    A goal for which conversions shall be calculated.
+   * @return Object Containing a set of date points and details for a period of time given a project id
+   */
+  public Map<Calendar, Map<String, DataSet>> getTrend(int clientId, int projectId, Calendar end, int entries, int goalId) {
+    Map<String, Object> queryParameters = new HashMap<>();
+    if (end != null) {
+      queryParameters.put("end", ABTestingRestConnector.DATE_FORMAT.format(end.getTime()));
+    }
+    if (entries > 0) {
+      queryParameters.put("entries", entries);
+    }
+    if (goalId > 0) {
+      queryParameters.put("goalid", goalId);
+    }
+
+    Map<Calendar, Map<String, DataSet>> trend = getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + PROJECT + projectId + "/trend/", new TypeReference<Map<Calendar, Map<String, DataSet>>>() {
+    }, queryParameters, null);
+    return trend;
   }
 }
