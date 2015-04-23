@@ -38,7 +38,7 @@ public class Account {
   /**
    * Indicates email has been verified by a double opt-in mail.
    */
-  private boolean emailvalidated;
+  private int emailvalidated;
   /**
    * Custom field.
    */
@@ -171,11 +171,11 @@ public class Account {
     this.apisecret = apisecret;
   }
 
-  public boolean isEmailvalidated() {
+  public int getEmailvalidated() {
     return emailvalidated;
   }
 
-  public void setEmailvalidated(boolean emailvalidated) {
+  public void setEmailvalidated(int emailvalidated) {
     this.emailvalidated = emailvalidated;
   }
 
