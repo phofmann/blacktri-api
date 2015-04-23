@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A goal is a criterion to attach a conversion event to a decision. It typically represents a user action or the technical event that indicates a certain action. Goals are assigned to projects. Most of them only apply to online/mobile based projects.
+ * A goal is a criterion to attach a conversion event to a decision.
+ * It typically represents a user action or the technical event that indicates a certain action.
+ * Goals are assigned to projects. Most of them only apply to online/mobile based projects.
  */
 public class Goal {
   /**

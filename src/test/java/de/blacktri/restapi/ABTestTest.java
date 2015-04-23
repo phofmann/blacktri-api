@@ -4,6 +4,7 @@ import de.blacktri.restapi.httpclient.ABTestingRestConnector;
 import de.blacktri.restapi.pojos.Account;
 import de.blacktri.restapi.pojos.DataSet;
 import de.blacktri.restapi.pojos.Decision;
+import de.blacktri.restapi.pojos.Goal;
 import de.blacktri.restapi.pojos.Project;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -104,6 +105,7 @@ public class ABTestTest {
   public void playground() {
     ABTest test = getTestling();
     int projectId = test.createProject(clientId, getProject());
+    getTestling().createGoal(clientId, projectId, new Goal("ENGAGEMENT", "NA"));
     Decision decision1 = new Decision("Green");
     decision1.setCssinjection(".cm-teaser--hero .cm-heading2--boxed {\n" +
             "    background-color: #00ff00;\n" +
