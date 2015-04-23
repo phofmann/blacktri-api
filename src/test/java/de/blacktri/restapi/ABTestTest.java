@@ -122,7 +122,7 @@ public class ABTestTest {
   }
 
   private Project getProject() {
-    return new Project("VISUAL", "http://preview-helios.livecontext.coremedia.com", "*", "PerfectChef " + System.currentTimeMillis());
+    return new Project("VISUAL", "http://localhost:40081/blueprint/servlet/perfectchef", "*", "PerfectChef " + System.currentTimeMillis());
   }
 
   private ABTest getTestling() {
