@@ -35,7 +35,7 @@ public class ABTestTest {
   @Test
   @Ignore
   public void testLogin() throws Exception {
-    int clientId = testling.login("api-client");
+    int clientId = getTestling().login("api-client");
     int clientId2 = testling.loginClient();
     Assert.assertEquals(clientId, clientId2);
   }
