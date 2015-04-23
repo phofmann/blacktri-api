@@ -9,7 +9,7 @@
   <context:annotation-config/>
 
 
-  <bean id="restConnector" class="de.blacktri.restapi.httpclient.ABTestingRestConnector">
+  <bean id="abTestingRestConnector" class="de.blacktri.restapi.httpclient.ABTestingRestConnector">
     <property name="serviceEndpoint" value="https://www.blacktri.com/api/v1/"/>
     <property name="connectionPoolSize" value="200"/>
     <property name="connectionTimeout" value="10000"/>
