@@ -8,6 +8,7 @@ import de.blacktri.restapi.pojos.Decision;
 import de.blacktri.restapi.pojos.Goal;
 import de.blacktri.restapi.pojos.Project;
 import de.blacktri.restapi.pojos.Rule;
+import de.blacktri.restapi.pojos.Trend;
 import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -566,7 +567,7 @@ public class ABTest {
    * @param goalId    A goal for which conversions shall be calculated.
    * @return Object Containing a set of date points and details for a period of time given a project id
    */
-  public Map<Calendar, Map<String, DataSet>> getTrend(int clientId, int projectId, Calendar end, int entries, int goalId) {
+  public Trend getTrend(int clientId, int projectId, Calendar end, int entries, int goalId) {
     Map<String, Object> queryParameters = new HashMap<>();
     if (end != null) {
       queryParameters.put("end", ABTestingRestConnector.DATE_FORMAT.format(end.getTime()));
@@ -578,8 +579,8 @@ public class ABTest {
       queryParameters.put("goalid", goalId);
     }
 
-    Map<Calendar, Map<String, DataSet>> trend = getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + PROJECT + projectId + "/trend/", new TypeReference<Map<Calendar, Map<String, DataSet>>>() {
+    Map<Calendar, Map<String, DataSet>> result = getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + PROJECT + projectId + "/trend/", new TypeReference<Map<Calendar, Map<String, DataSet>>>() {
     }, queryParameters, null);
-    return trend;
+    return new Trend(result);
   }
 }

@@ -2,10 +2,10 @@ package de.blacktri.restapi;
 
 import de.blacktri.restapi.httpclient.ABTestingRestConnector;
 import de.blacktri.restapi.pojos.Account;
-import de.blacktri.restapi.pojos.DataSet;
 import de.blacktri.restapi.pojos.Decision;
 import de.blacktri.restapi.pojos.Goal;
 import de.blacktri.restapi.pojos.Project;
+import de.blacktri.restapi.pojos.Trend;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -14,9 +14,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.inject.Inject;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({
@@ -88,11 +86,11 @@ public class ABTestTest {
     ABTest test = getTestling();
     List<Project> projects = test.getProjects(clientId);
     for (Project project : projects) {
-      Map<Calendar, Map<String, DataSet>> trend = test.getTrend(clientId, project.getId(), null, 1, -1);
-      for (Map.Entry<Calendar, Map<String, DataSet>> calendarMapEntry : trend.entrySet()) {
-        System.out.println("For " + ABTestingRestConnector.DATE_FORMAT.format(calendarMapEntry.getKey().getTime()));
-        for (Map.Entry<String, DataSet> o : calendarMapEntry.getValue().entrySet()) {
-          System.out.println(o.getKey() + ": Name: " + o.getValue().getName() + " Conversion: " + o.getValue().getConversions() + " Impressions: " + o.getValue().getImpressions() + " Aggregatedcr: " + o.getValue().getAggregatedcr());
+      Trend trend = test.getTrend(clientId, project.getId(), null, 1, -1);
+      for (Trend.TrendEntry entry : trend.getTrend()) {
+        System.out.println("For " + ABTestingRestConnector.DATE_FORMAT.format(entry.getDay().getTime()));
+        for (Trend.Experiment o : entry.getExperiments()) {
+          System.out.println(o.getId() + ": Name: " + o.getDataSet().getName() + " Conversion: " + o.getDataSet().getConversions() + " Impressions: " + o.getDataSet().getImpressions() + " Aggregatedcr: " + o.getDataSet().getAggregatedcr());
 
         }
       }

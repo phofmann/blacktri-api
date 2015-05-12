@@ -1,26 +1,63 @@
 package de.blacktri.restapi.pojos;
 
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 /**
- * The trend resource represents an array of data sets, each containing impressions and conversions of a decision resource in a given period of time. The trend resource can thus be used to populate charts or create custom reports.
+ * The trend resource represents an array of data sets, each containing impressions and conversions of a decision
+ * resource in a given period of time. The trend resource can thus be used to populate charts or create custom reports.
  */
 public class Trend {
-  /**
-   * An array of datetime-objects, each representing the sample date and time of one datapoint. Currently each timestamp represents one day.
-   */
-  private List timestamps;
+  private List<TrendEntry> trend = new ArrayList<>();
 
-  /**
-   * An array of dataset objects. Each represents one decision in a project. The first dataset is by convention the original ("control").
-   */
-  private List<DataSet> datasets;
-
-  public List getTimestamps() {
-    return timestamps;
+  public List<TrendEntry> getTrend() {
+    return trend;
   }
 
-  public List<DataSet> getDatasets() {
-    return datasets;
+  public Trend(Map<Calendar, Map<String, DataSet>> trend) {
+    for (Map.Entry<Calendar, Map<String, DataSet>> calendarMapEntry : trend.entrySet()) {
+      this.trend.add(new TrendEntry(calendarMapEntry.getKey(), calendarMapEntry.getValue()));
+
+    }
+  }
+
+  public class TrendEntry {
+    private Calendar day;
+    private List<Experiment> experiments = new ArrayList<>();
+
+    public TrendEntry(Calendar day, Map<String, DataSet> results) {
+      this.day = day;
+      for (Map.Entry<String, DataSet> entry : results.entrySet()) {
+        this.experiments.add(new Experiment(entry.getKey(), entry.getValue()));
+      }
+    }
+
+    public Calendar getDay() {
+      return day;
+    }
+
+    public List<Experiment> getExperiments() {
+      return experiments;
+    }
+  }
+
+  public class Experiment {
+    String id;
+    DataSet dataSet;
+
+    public Experiment(String id, DataSet dataSet) {
+      this.id = id;
+      this.dataSet = dataSet;
+    }
+
+    public String getId() {
+      return id;
+    }
+
+    public DataSet getDataSet() {
+      return dataSet;
+    }
   }
 }
