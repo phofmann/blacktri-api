@@ -19,6 +19,8 @@ public class DataSet {
    */
   private float aggregatedcr;
 
+  private String values;
+
   public String getName() {
     return name;
   }
@@ -33,5 +35,9 @@ public class DataSet {
 
   public float getAggregatedcr() {
     return aggregatedcr;
+  }
+
+  public String getValues() {
+    return values;
   }
 }

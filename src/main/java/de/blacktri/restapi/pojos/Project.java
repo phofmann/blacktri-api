@@ -126,6 +126,7 @@ public class Project extends BlackTriObject {
    */
   int ruleid;
   String winnername;
+  String devicetype;
 
   public Project() {
   }
@@ -356,5 +357,13 @@ public class Project extends BlackTriObject {
 
   public void setWinnername(String winnername) {
     this.winnername = winnername;
+  }
+
+  public String getDevicetype() {
+    return devicetype;
+  }
+
+  public void setDevicetype(String devicetype) {
+    this.devicetype = devicetype;
   }
 }

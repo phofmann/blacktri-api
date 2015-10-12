@@ -35,7 +35,7 @@ public class Decision extends BlackTriObject {
    * <p/>
    * The type can not be set. When creating a project, the control decision is created automatically. All additional decisions are of type VARIANT.
    */
-  private int type;
+  private String type;
   /**
    * For projects where
    * <p/>
@@ -142,11 +142,11 @@ public class Decision extends BlackTriObject {
     this.previewurl = previewurl;
   }
 
-  public int getType() {
+  public String getType() {
     return type;
   }
 
-  public void setType(int type) {
+  public void setType(String type) {
     this.type = type;
   }
 
