@@ -17,9 +17,10 @@ public class Trend {
   }
 
   public Trend(Map<Calendar, Map<String, DataSet>> trend) {
-    for (Map.Entry<Calendar, Map<String, DataSet>> calendarMapEntry : trend.entrySet()) {
-      this.trend.add(new TrendEntry(calendarMapEntry.getKey(), calendarMapEntry.getValue()));
-
+    if (trend != null) {
+      for (Map.Entry<Calendar, Map<String, DataSet>> calendarMapEntry : trend.entrySet()) {
+        this.trend.add(new TrendEntry(calendarMapEntry.getKey(), calendarMapEntry.getValue()));
+      }
     }
   }
 

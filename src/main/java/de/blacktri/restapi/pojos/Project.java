@@ -11,11 +11,15 @@ public class Project extends BlackTriObject {
   int id;
   /**
    * Type of project:
-   * <p/>
    * VISUAL: Visual A/B-test
    * SPLIT: Split-test
+   * TEASERTEST: Teaser- or Headlinetest
    */
-  String type;
+  public enum ProjectType {
+    VISUAL, SPLIT, TEASERTEST
+  }
+
+  ProjectType type;
   /**
    * A URL representing the main original URL of a project. It is used to create a preview page and internal documentation.
    * <p/>
@@ -131,7 +135,7 @@ public class Project extends BlackTriObject {
   public Project() {
   }
 
-  public Project(String type, String mainurl, String runpattern, String name) {
+  public Project(ProjectType type, String mainurl, String runpattern, String name) {
     this.type = type;
     this.mainurl = mainurl;
     this.runpattern = runpattern;
@@ -140,7 +144,7 @@ public class Project extends BlackTriObject {
 
   public Map<String, Object> toMap() {
     Map<String, Object> result = new HashMap<>();
-    addRequiredParameter(result, "type", this.getType());
+    addRequiredParameter(result, "type", this.getType().toString());
     addRequiredParameter(result, "mainurl", this.getMainurl());
     addRequiredParameter(result, "runpattern", this.getRunpattern());
     addRequiredParameter(result, "name", this.getName());
@@ -162,11 +166,11 @@ public class Project extends BlackTriObject {
     this.id = id;
   }
 
-  public String getType() {
+  public ProjectType getType() {
     return type;
   }
 
-  public void setType(String type) {
+  public void setType(ProjectType type) {
     this.type = type;
   }
 

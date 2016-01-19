@@ -5,6 +5,7 @@ import de.blacktri.restapi.pojos.Account;
 import de.blacktri.restapi.pojos.Condition;
 import de.blacktri.restapi.pojos.DataSet;
 import de.blacktri.restapi.pojos.Decision;
+import de.blacktri.restapi.pojos.DecisionGroup;
 import de.blacktri.restapi.pojos.Goal;
 import de.blacktri.restapi.pojos.Project;
 import de.blacktri.restapi.pojos.Rule;
@@ -45,6 +46,8 @@ public class ABTest {
   public static final String GOAL = "/goal/";
   public static final String RULE = "/rule/";
   public static final String CONDITION = "/condition/";
+  public static final String DECISIONGROUPS = "/decisiongroups";
+  public static final String DECISIONGROUP = "/decisiongroup/";
   private ABTestingRestConnector restConnector;
   private String apiKey;
   private String apiSecret;
@@ -112,7 +115,7 @@ public class ABTest {
    * If the user is a client, returns the projects that has been created himself.
    * <p/>
    * Results can be searched/filtered with the following querystring qualifiers that refer to values of the
-   * resource attributes "type" and "status" (e.g, type=SPLIT status=RUNNING).
+   * resource attributes "type" and "status" (e.g, type=SPLIT&status=RUNNING).
    * <p/>
    * The result list can be sorted by providing the qualifier sort with one of the project attributes.
    * A dash can be added to the attribute to indicate descending order (e.g. sort=-createddate).
@@ -279,6 +282,131 @@ public class ABTest {
 
 
   /**
+   * Get a list of decision_groups that the current user has created.
+   * <p/>
+   * It can be filtered and sorted by one or more of the available fields (e.g, status=RUNNING&sort=name).
+   *
+   * @param clientId  - the user account id to retrieve the data for
+   * @param projectId - the ID of the project that the decision group belongs to
+   * @param filter    - "&" separated key=value pairs to filter, sort and limit results
+   * @return Object containig the list of created decision groups
+   */
+  public List<DecisionGroup> getDecisionGroups(int clientId, int projectId, String filter) {
+    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + PROJECT + projectId + DECISIONGROUPS, new TypeReference<List<DecisionGroup>>() {
+    }, null);
+  }
+
+  /**
+   * Returns all data given a project id and a group decision id
+   * <p/>
+   * Receives a project ID and a decision group id as parameters and returns a JSON object with
+   * all of the decision group data
+   *
+   * @param clientId        - the user account id to retrieve the data for
+   * @param projectId       - the ID of the project that the decision group belongs to
+   * @param decisionGroupId - the decision group id
+   * @return Object Containing the details for the specified project
+   */
+  public DecisionGroup getDecisionGroup(int clientId, int projectId, int decisionGroupId) {
+    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + PROJECT + projectId + DECISIONGROUP + decisionGroupId, new TypeReference<DecisionGroup>() {
+    }, null);
+  }
+
+  /**
+   * Creates a new decision group
+   * <p/>
+   * Users can create decision groups by calling this method with a project ID and an array containing
+   * all required data for the decision group (name)
+   *
+   * @param clientId      - the user account id to retrieve the data for
+   * @param projectId     - the ID of the project that the decision group belongs to
+   * @param decisionGroup - containing mandatory fields ( array(name => 'groupname'); )
+   * @return The new decision group ID
+   */
+  public Integer createDecisionGroup(int clientId, int projectId, DecisionGroup decisionGroup) {
+    return getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + PROJECT + projectId + DECISIONGROUP, new TypeReference<Integer>() {
+    }, decisionGroup.toMap());
+  }
+
+  /**
+   * Updates a decision group data
+   * <p/>
+   * Users can create decision groups by calling this method with a project ID and an array containing
+   * all required data for the decision group (name)
+   *
+   * @param clientId      - the user account id to retrieve the data for
+   * @param projectId     - the ID of the project that the decision group belongs to
+   * @param decisionGroup - containing mandatory fields ( array(name => 'groupname'); )
+   * @return The new decision group ID
+   */
+  public Object updateDecisionGroup(int clientId, int projectId, int decisionGroupId, DecisionGroup decisionGroup) {
+    return getRestConnector().callService(HttpMethod.PUT, ACCOUNT + clientId + PROJECT + projectId + DECISIONGROUP + decisionGroupId, null, decisionGroup.toMap());
+  }
+
+  /**
+   * Deletes a decision group given a project and a decision group ID
+   *
+   * @param clientId        - the user account id to retrieve the data for
+   * @param projectId       - the ID of the project that the decision group belongs to
+   * @param decisionGroupId The ID of the decision group to be deleted
+   * @return Object Containing the response from the server after trying to delete the given decision
+   */
+  public Object deleteDecisionGroup(int clientId, int projectId, int decisionGroupId) {
+    return getRestConnector().callService(HttpMethod.DELETE, ACCOUNT + clientId + PROJECT + projectId + DECISIONGROUP + decisionGroupId, null, null);
+  }
+
+  /**
+   * given a project ID and a decision group ID, starts the group by updating the necessary fields in the DB
+   * (like setting the status to "RUNNING")
+   *
+   * @param clientId        - the user account id to retrieve the data for
+   * @param projectId       - the ID of the project that the decision group belongs to
+   * @param decisionGroupId -  The ID of the decision group to be started
+   * @return Object Containing  the response from the server after trying to start the group
+   */
+  public Object startDecisionGroup(int clientId, int projectId, int decisionGroupId) {
+    return getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + PROJECT + projectId + DECISIONGROUP + decisionGroupId + START, new TypeReference<Boolean>() {
+    }, null);
+  }
+
+  /**
+   * given a project ID and a decision group ID, stops the group by updating the necessary fields in the DB
+   * (like setting the status to "PAUSED")
+   *
+   * @param clientId        - the user account id to retrieve the data for
+   * @param projectId       - the ID of the project that the decision group belongs to
+   * @param decisionGroupId -  The ID of the decision group to be paused
+   * @return Object Containing the response from the server after trying to stop the group
+   */
+  public Object stopDecisionGroup(int clientId, int projectId, int decisionGroupId) {
+    return getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + PROJECT + projectId + DECISIONGROUP + decisionGroupId + STOP, new TypeReference<Boolean>() {
+    }, null);
+  }
+
+  /**
+   * given a project ID and a decision group ID, restarts the group by updating the necessary fields in the DB.
+   *
+   * @param clientId        - the user account id to retrieve the data for
+   * @param projectId       - the ID of the project that the decision group belongs to
+   * @param decisionGroupId -  The ID of the decision group to be restarted
+   * @return Object Containing  the response from the server after trying to restart the group
+   */
+  public Object restartDecisionGroup(int clientId, int projectId, int decisionGroupId) {
+    return getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + PROJECT + projectId + DECISIONGROUP + decisionGroupId + RESTART, new TypeReference<Boolean>() {
+    }, null);
+  }
+
+
+  private String getDecisionBasePath(int clientId, int projectId, int decisionsGroupId) {
+    String path = ACCOUNT + clientId + PROJECT + projectId;
+    if (decisionsGroupId != -1) {
+      path += DECISIONGROUP + decisionsGroupId;
+    }
+    return path;
+  }
+
+
+  /**
    * Returns a list of decisions for the given project
    * <p/>
    * The result list can be sorted by providing the qualifier "sort" with one of the following attributes:
@@ -293,13 +421,17 @@ public class ABTest {
    * @param filter    - URL parameters to filter results ( name=MyVariatn )
    * @return Object Containing the list of decisions with their respective details for the given project
    */
-  public List<Decision> getDecisions(int clientId, int projectId, String sort, String filter) {
+  public List<Decision> getDecisions(int clientId, int projectId, int decisionGroupId, String sort, String filter) {
     Map<String, Object> queryParameters = new HashMap<>();
     if (StringUtils.hasText(sort)) {
       queryParameters.put("sort", sort);
     }
-    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + PROJECT + projectId + DECISIONS, new TypeReference<List<Decision>>() {
+    return getRestConnector().callService(HttpMethod.GET, getDecisionBasePath(clientId, projectId, decisionGroupId) + DECISIONS, new TypeReference<List<Decision>>() {
     }, queryParameters, null);
+  }
+
+  public List<Decision> getDecisions(int clientId, int projectId, String sort, String filter) {
+    return getDecisions(clientId, projectId, -1, sort, filter);
   }
 
   /**
@@ -313,9 +445,13 @@ public class ABTest {
    * @param decisionId the id of the decision
    * @return Object Containing all details for the specified decision for the given project
    */
-  public Decision getDecision(int clientId, int projectId, int decisionId) {
-    return getRestConnector().callService(HttpMethod.GET, ACCOUNT + clientId + PROJECT + projectId + DECISION + decisionId, new TypeReference<Decision>() {
+  public Decision getDecision(int clientId, int projectId, int decisionGroupId, int decisionId) {
+    return getRestConnector().callService(HttpMethod.GET, getDecisionBasePath(clientId, projectId, decisionGroupId) + DECISION + decisionId, new TypeReference<Decision>() {
     }, null);
+  }
+
+  public int getDecision(int clientId, int projectId, Decision decision) {
+    return createDecision(clientId, projectId, -1, decision);
   }
 
   /**
@@ -326,9 +462,13 @@ public class ABTest {
    * @param decision  - contains each decision field to be created in the DB
    * @return Object Containing the new created decision id
    */
-  public int createDecision(int clientId, int projectId, Decision decision) {
-    return getRestConnector().callService(HttpMethod.POST, ACCOUNT + clientId + PROJECT + projectId + "/decision", new TypeReference<Integer>() {
+  public int createDecision(int clientId, int projectId, int decisionGroupId, Decision decision) {
+    return getRestConnector().callService(HttpMethod.POST, getDecisionBasePath(clientId, projectId, decisionGroupId) + "/decision", new TypeReference<Integer>() {
     }, decision.toMap());
+  }
+
+  public int createDecision(int clientId, int projectId, Decision decision) {
+    return createDecision(clientId, projectId, -1, decision);
   }
 
   /**
@@ -339,8 +479,12 @@ public class ABTest {
    * @param decisionId The ID of the decision to be updated
    * @param decision   - contains all required fields to be updated in the DB
    */
-  public void updateDecision(int clientId, int projectId, int decisionId, Decision decision) {
-    getRestConnector().callService(HttpMethod.PUT, ACCOUNT + clientId + PROJECT + projectId + DECISION + decisionId, null, decision.toMap());
+  public void updateDecision(int clientId, int projectId, int decisionId, int decisionGroupId, Decision decision) {
+    getRestConnector().callService(HttpMethod.PUT, ACCOUNT + getDecisionBasePath(clientId, projectId, decisionGroupId) + DECISION + decisionId, null, decision.toMap());
+  }
+
+  public void updateDecision(int clientId, int projectId, int decisionGroupId, Decision decision) {
+    updateDecision(clientId, projectId, -1, decisionGroupId, decision);
   }
 
   /**
@@ -350,8 +494,12 @@ public class ABTest {
    * @param projectId  The ID of the project to delete the decision for
    * @param decisionId The ID of the decision to be deleted
    */
+  public void deleteDecision(int clientId, int projectId, int decisionGroupId, int decisionId) {
+    getRestConnector().callService(HttpMethod.DELETE, getDecisionBasePath(clientId, projectId, decisionGroupId) + DECISION + decisionId, null, null);
+  }
+
   public void deleteDecision(int clientId, int projectId, int decisionId) {
-    getRestConnector().callService(HttpMethod.DELETE, ACCOUNT + clientId + PROJECT + projectId + DECISION + decisionId, null, null);
+    deleteDecision(clientId, projectId, -1, decisionId);
   }
 
   /**

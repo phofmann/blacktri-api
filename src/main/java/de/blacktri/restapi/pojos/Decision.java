@@ -231,5 +231,13 @@ public class Decision extends BlackTriObject {
   public void setRunpattern(String runpattern) {
     this.runpattern = runpattern;
   }
+
+  @Override
+  public String toString() {
+    return "Decision{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            '}';
+  }
 }
  
