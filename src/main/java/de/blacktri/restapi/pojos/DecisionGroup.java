@@ -23,7 +23,10 @@ public class DecisionGroup extends BlackTriObject {
    * PAUSED
    * RUNNING
    */
-  private String status;
+  public enum Status {
+    PAUSED, RUNNING
+  }
+  private Status status;
   /**
    * Number of visitors that have participated in this decisiongroup.
    */
@@ -97,11 +100,11 @@ public class DecisionGroup extends BlackTriObject {
     this.name = name;
   }
 
-  public String getStatus() {
+  public Status getStatus() {
     return status;
   }
 
-  public void setStatus(String status) {
+  public void setStatus(Status status) {
     this.status = status;
   }
 
@@ -167,5 +170,13 @@ public class DecisionGroup extends BlackTriObject {
 
   public void setUplift(float uplift) {
     this.uplift = uplift;
+  }
+
+  @Override
+  public String toString() {
+    return "DecisionGroup{" +
+            "id=" + id +
+            ", status='" + status + '\'' +
+            '}';
   }
 }

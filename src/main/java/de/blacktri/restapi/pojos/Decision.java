@@ -237,6 +237,9 @@ public class Decision extends BlackTriObject {
     return "Decision{" +
             "id=" + id +
             ", name='" + name + '\'' +
+            ", type='" + type + '\'' +
+            ", visitors=" + visitors +
+            ", conversions=" + conversions +
             '}';
   }
 }
